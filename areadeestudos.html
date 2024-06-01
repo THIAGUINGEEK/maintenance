@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cronômetro de Estudos</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background-color: #121212;
+            color: #ffffff;
+            font-family: 'Roboto', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            height: 100vh;
+            margin: 0;
+            position: relative;
+        }
+        .container {
+            text-align: center;
+            background-color: #1f1f1f;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.7);
+            width: 80%;
+            max-width: 600px;
+        }
+        .platform-info {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background-color: rgba(0, 0, 0, 0.5);
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        .reset-button {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background-color: #e74c3c;
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-family: 'Roboto', sans-serif;
+        }
+        .reset-button:hover {
+            background-color: #c0392b;
+        }
+        h1 {
+            color: #3498db;
+            margin-bottom: 20px;
+        }
+        .timer {
+            font-size: 4em;
+            margin: 20px 0;
+            color: #3498db;
+        }
+        .input-section, .history-section, .current-study-section, .report-section {
+            margin: 20px 0;
+            width: 100%;
+        }
+        input, button, select {
+            padding: 10px;
+            font-size: 1em;
+            margin: 5px;
+            font-family: 'Roboto', sans-serif;
+            border-radius: 5px;
+            border: 1px solid #3498db;
+            outline: none;
+        }
+        input, select {
+            background-color: #1e1e1e;
+            color: #ffffff;
+        }
+        button {
+            cursor: pointer;
+            background-color: #3498db;
+            border: none;
+            color: white;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #1e6f9f;
+        }
+        .history-section {
+            text-align: left;
+        }
+        .history-item {
+            background-color: #444444;
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+        }
+        .history-day {
+            margin-bottom: 20px;
+            padding: 10px;
+            border: 1px solid #3498db;
+            border-radius: 10px;
+            background-color: #2a2a2a;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+        }
+        .history-day h3 {
+            color: #3498db;
+            margin-bottom: 10px;
+        }
+        .current-study {
+            background-color: #444444;
+            padding: 10px;
+            border-radius: 5px;
+            color: #3498db;
+            font-size: 1.2em;
+        }
+        .incidences {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: #2a2a2a;
+            padding: 10px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+        }
+        .incidences h2 {
+            margin-top: 0;
+            color: #3498db;
+        }
+        .incidences button {
+            background-color: #3498db;
+            border: none;
+            color: white;
+            padding: 10px;
+            margin: 5px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .incidences button:hover {
+            background-color: #1e6f9f;
+        }
+        .pdf-viewer {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 80%;
+            height: 80%;
+            background-color: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+        }
+        .pdf-viewer iframe {
+            width: 100%;
+            height: 90%;
+            border: none;
+            border-bottom: 1px solid #ddd;
+        }
+        .pdf-viewer .close-btn {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            background-color: #3498db;
+            border: none;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .pdf-viewer .close-btn:hover {
+            background-color: #1e6f9f;
+        }
+		button {
+			cursor: pointer;
+			background-color: #3498db;
+			border: none;
+			color: white;
+			padding: 10px;
+			margin: 5px;
+			border-radius: 5px;
+			transition: background-color 0.3s;
+		}
+		button:hover {
+			background-color: #1e6f9f;
+		}
+		
+		.controls {
+			display: flex;
+			justify-content: center;
+			gap: 10px;
+			margin: 10px 0;
+		}
+
+		.controls button {
+			padding: 10px 15px;
+			font-size: 0.9em;
+		}
+		
+
+    </style>
+</head>
+<body>
+    <button class="reset-button" onclick="resetHistory()">Resetar Histórico</button>
+    <div class="platform-info">
+        Plataforma desenvolvida por <a href="https://thiago-rodrigues.com" target="_blank">Thiago Rodrigues</a>
+    </div>
+    <div class="container">
+        <h1>Área de Estudos - TH</h1>
+        <div class="timer" id="timer">00:00:00</div>
+        <div class="current-study-section">
+            <div id="currentStudy" class="current-study">Você não está estudando nenhum assunto no momento.</div>
+        </div>
+        <div class="input-section">
+            <input type="text" id="subject" placeholder="Nome do Assunto" required>
+            <select id="category" required>
+                <option value="" disabled selected>Selecione uma categoria</option>
+                <option value="Geral">Geral</option>
+                <option value="Matemática">Matemática</option>
+                <option value="Geografia">Geografia</option>
+                <option value="Biologia">Biologia</option>
+                <option value="História">História</option>
+                <option value="Física">Física</option>
+                <option value="Química">Química</option>
+                <option value="Português">Português</option>
+                <option value="Redação">Redação</option>
+                <option value="Filosofia">Filosofia</option>
+                <option value="Sociologia">Sociologia</option>
+                <option value="Artes">Artes</option>
+                <option value="Atualidades">Atualidades</option>
+                <option value="Efemerides">Efemérides</option>
+                <option value="Outros">Outros</option>
+            </select>
+            <input type="number" id="customTime" placeholder="Tempo em minutos" required>
+        </div>
+        <div class="report-section">
+            <button onclick="generateReport()">Gerar Relatório de Estudos</button>
+        </div>
+        <div class="history-section">
+            <h2>Histórico de Estudos</h2>
+            <div id="history"></div>
+        </div>
+    </div>
+
+    <div class="incidences">
+        <h2>Incidências</h2>
+        <button onclick="showPDF('Incidencia_Enem.pdf')">ENEM</button>
+        <button onclick="showPDF('Incidencia_UERJ.pdf')">UERJ</button>
+		<button onclick="showPDF('Incidencia_ESA.pdf')">ESA</button>
+		<button onclick="showPDF('Incidencia_ESPCEX.pdf')">ESPCEX</button>
+    </div>
+	
+	<div class="controls">
+		<button onclick="startTimer()">Iniciar</button>
+		<button onclick="endSession()">Terminar</button>
+		<button onclick="pauseTimer()">Pausar</button>
+		<button onclick="resumeTimer()">Continuar</button>
+		<button onclick="editElapsedTime()">Editar Tempo</button>
+	</div>
+
+    <div class="pdf-viewer" id="pdfViewer">
+        <iframe id="pdfFrame" src=""></iframe>
+        <button class="close-btn" onclick="closePDF()">Fechar</button>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script>
+		let timerInterval;
+		let remainingTime;
+		let totalTime = 0;
+		let isPaused = false;
+		let pausedTime = 0;
+
+        document.addEventListener('DOMContentLoaded', (event) => {
+            loadHistory();
+        });
+		
+		function pauseTimer() {
+			if (!isPaused) {
+				clearInterval(timerInterval);
+				isPaused = true;
+				pausedTime = remainingTime;
+				document.getElementById('currentStudy').innerText = `Cronômetro pausado. Você estava estudando: ${document.getElementById('subject').value} - ${document.getElementById('category').value}`;
+			}
+		}
+		
+		function resumeTimer() {
+			if (isPaused) {
+				remainingTime = pausedTime;
+				isPaused = false;
+				document.getElementById('currentStudy').innerText = `Você está estudando: ${document.getElementById('subject').value} - ${document.getElementById('category').value}`;
+				timerInterval = setInterval(() => {
+					remainingTime--;
+					document.getElementById('timer').innerText = formatTime(remainingTime);
+
+					if (remainingTime <= 0) {
+						clearInterval(timerInterval);
+						saveStudySession(document.getElementById('subject').value, document.getElementById('category').value, totalTime / 60);
+						document.getElementById('currentStudy').innerText = `Você não está estudando nenhum assunto no momento.`;
+					}
+				}, 1000);
+			}
+		}
+		
+		function editElapsedTime() {
+			const newTime = prompt("Digite o novo tempo decorrido em minutos:", (totalTime - remainingTime) / 60);
+			if (newTime !== null && !isNaN(newTime) && newTime >= 0) {
+				remainingTime = (totalTime - (newTime * 60));
+				document.getElementById('timer').innerText = formatTime(remainingTime);
+			}
+		}
+
+
+		function startTimer() {
+			const subject = document.getElementById('subject').value;
+			const category = document.getElementById('category').value;
+			const customTime = parseInt(document.getElementById('customTime').value);
+
+			if (!subject || !category || isNaN(customTime) || customTime <= 0) {
+				alert('Por favor, insira um assunto válido, selecione uma categoria e tempo em minutos.');
+				return;
+			}
+
+			isPaused = false;
+			remainingTime = customTime * 60;
+			totalTime = remainingTime;
+			document.getElementById('timer').innerText = formatTime(remainingTime);
+			document.getElementById('currentStudy').innerText = `Você está estudando: ${subject} - ${category}`;
+
+			clearInterval(timerInterval);
+			timerInterval = setInterval(() => {
+				remainingTime--;
+				document.getElementById('timer').innerText = formatTime(remainingTime);
+
+				if (remainingTime <= 0) {
+					clearInterval(timerInterval);
+					saveStudySession(subject, category, customTime);
+					document.getElementById('currentStudy').innerText = `Você não está estudando nenhum assunto no momento.`;
+				}
+			}, 1000);
+		}
+
+		function endSession() {
+			clearInterval(timerInterval);
+			const subject = document.getElementById('subject').value;
+			const category = document.getElementById('category').value;
+			const timeStudied = (totalTime - remainingTime) / 60;
+
+			if (!subject || !category) {
+				alert('Por favor, insira um assunto válido e selecione uma categoria.');
+				return;
+			}
+
+			saveStudySession(subject, category, timeStudied);
+			document.getElementById('currentStudy').innerText = `Você não está estudando nenhum assunto no momento.`;
+		}
+		
+		function formatStudyTime(totalSeconds) {
+			const hours = Math.floor(totalSeconds / 3600);
+			const minutes = Math.floor((totalSeconds % 3600) / 60);
+			const seconds = totalSeconds % 60;
+
+			let formattedTime = '';
+			if (hours > 0) {
+				formattedTime += `${hours} horas`;
+			}
+			if (minutes > 0) {
+				if (formattedTime) formattedTime += ', ';
+				formattedTime += `${minutes} minutos`;
+			}
+			if (seconds > 0) {
+				if (formattedTime) formattedTime += ' e ';
+				formattedTime += `${seconds} segundos`;
+			}
+			return formattedTime;
+		}
+
+        function formatTime(seconds) {
+            const h = Math.floor(seconds / 3600).toString().padStart(2, '0');
+            const m = Math.floor((seconds % 3600) / 60).toString().padStart(2, '0');
+            const s = (seconds % 60).toString().padStart(2, '0');
+            return `${h}:${m}:${s}`;
+        }
+
+		function saveStudySession(subject, category, time) {
+			const date = new Date().toLocaleString();
+			const history = document.getElementById('history');
+
+			const currentDay = new Date().toLocaleDateString();
+			const storedHistory = JSON.parse(localStorage.getItem('studyHistory')) || {};
+			const dayHistory = storedHistory[currentDay] || [];
+
+			const session = {
+				subject: subject,
+				category: category,
+				time: time, // Remove the multiplication by 60 here
+				date: date
+			};
+
+			dayHistory.push(session);
+			storedHistory[currentDay] = dayHistory;
+			localStorage.setItem('studyHistory', JSON.stringify(storedHistory));
+
+			updateHistoryView(storedHistory);
+
+			document.getElementById('subject').value = '';
+			document.getElementById('category').value = '';
+			document.getElementById('customTime').value = '';
+			document.getElementById('timer').innerText = '00:00:00';
+		}
+
+        function loadHistory() {
+            const storedHistory = JSON.parse(localStorage.getItem('studyHistory')) || {};
+            updateHistoryView(storedHistory);
+        }
+
+		function updateHistoryView(historyData) {
+			const history = document.getElementById('history');
+			history.innerHTML = '';
+
+			for (const [day, sessions] of Object.entries(historyData)) {
+				const daySection = document.createElement('div');
+				daySection.className = 'history-day';
+
+				const dayTitle = document.createElement('h3');
+				dayTitle.innerText = day;
+				daySection.appendChild(dayTitle);
+
+				let totalDayTime = 0;
+				sessions.forEach(session => {
+					totalDayTime += parseFloat(session.time) * 60; // Convert minutes to seconds
+
+					const sessionItem = document.createElement('div');
+					sessionItem.className = 'history-item';
+					sessionItem.innerHTML = `<strong>Assunto:</strong> ${session.subject} <br> <strong>Categoria:</strong> ${session.category} <br> <strong>Tempo:</strong> ${formatStudyTime(session.time * 60)}<br> <strong>Data:</strong> ${session.date}`;
+					daySection.appendChild(sessionItem);
+				});
+
+				const totalTimeItem = document.createElement('div');
+				totalTimeItem.className = 'history-item';
+				totalTimeItem.innerHTML = `<strong>Tempo Total Estudado:</strong> ${formatStudyTime(totalDayTime)}`;
+				daySection.appendChild(totalTimeItem);
+
+				history.appendChild(daySection);
+			}
+		}
+
+        function resetHistory() {
+            if (confirm('Tem certeza de que deseja resetar o histórico de estudos?')) {
+                localStorage.removeItem('studyHistory');
+                document.getElementById('history').innerHTML = '';
+            }
+        }
+
+		async function generateReport() {
+			const storedHistory = JSON.parse(localStorage.getItem('studyHistory')) || {};
+			const { jsPDF } = window.jspdf;
+
+			const doc = new jsPDF();
+			doc.setFont("Roboto");
+
+			let yOffset = 20;
+			doc.setFontSize(20);
+			doc.setTextColor("#3498db");
+			doc.text("Relatório de Estudos", 105, yOffset, null, null, "center");
+
+			yOffset += 10;
+			doc.setFontSize(12);
+
+			for (const [day, sessions] of Object.entries(storedHistory)) {
+				doc.setFontSize(16);
+				doc.setTextColor("#2a2a2a");
+				yOffset += 10;
+				doc.text(day, 20, yOffset);
+				yOffset += 10;
+
+				let totalDayTime = 0;
+
+				sessions.forEach(session => {
+					totalDayTime += parseFloat(session.time.split(' ')[0]) * 3600; // Convert hours to seconds
+
+					doc.setFontSize(12);
+					doc.setTextColor("#000000");
+					const sessionText = `Assunto: ${session.subject}\nCategoria: ${session.category}\nTempo: ${session.time}\nData: ${session.date}`;
+					doc.text(sessionText, 20, yOffset);
+					yOffset += 20;
+				});
+
+				doc.setFontSize(14);
+				doc.setTextColor("#3498db");
+				doc.text(`Tempo Total Estudado: ${formatStudyTime(totalDayTime)}`, 20, yOffset);
+				yOffset += 20;
+			}
+
+			const now = new Date();
+			const dateTimeString = `${now.toLocaleDateString()}_${now.getHours()}-${now.getMinutes()}-${now.getSeconds()}`;
+			doc.save(`relatorio_de_estudos_${dateTimeString}.pdf`);
+		}
+
+        function showPDF(pdf) {
+            const pdfViewer = document.getElementById('pdfViewer');
+            const pdfFrame = document.getElementById('pdfFrame');
+            pdfFrame.src = pdf;
+            pdfViewer.style.display = 'block';
+        }
+
+        function closePDF() {
+            const pdfViewer = document.getElementById('pdfViewer');
+            pdfViewer.style.display = 'none';
+        }
+    </script>
+</body>
+</html>
+
+    </script>
+</body>
+</html>
